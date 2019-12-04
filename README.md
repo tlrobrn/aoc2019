@@ -23,7 +23,7 @@ test/day3/part2_test.exs
 ```
 
 The input is expected to be put in `input/day3.txt`, and by default it is fed to the part modules' `run` function as lines.
-If additional parsing is desired, a `parse` function may be defined in the `AOC.Day3` module to handle each line.
+If additional parsing is desired, a `parse` function may be defined in the `AOC.Day3` module to handle the lines.
 
 ### Star
 
