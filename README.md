@@ -1,21 +1,35 @@
 # AOC
 
-**TODO: Add description**
+[Advent of Code 2019](https://adventofcode.com/2019)
 
-## Installation
+## Mix Tasks
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `aoc2019` to your list of dependencies in `mix.exs`:
+### Gen.Day
 
-```elixir
-def deps do
-  [
-    {:aoc2019, "~> 0.1.0"}
-  ]
-end
+```sh
+$ mix gen.day DAY
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/aoc2019](https://hexdocs.pm/aoc2019).
+Generate modules and tests for the given day.
+For example, when run for DAY 3, `$ mix gen.day 3` creates the following files.
 
+```
+lib/day3.ex
+lib/day3/part1.ex
+lib/day3/part2.ex
+test/day3_test.exs
+test/day3/part1_test.exs
+test/day3/part2_test.exs
+```
+
+The input is expected to be put in `input/day3.txt`, and by default it is fed to the part modules' `run` function as lines.
+If additional parsing is desired, a `parse` function may be defined in the `AOC.Day3` module to handle each line.
+
+### Star
+
+```sh
+$ mix star DAY PART
+```
+
+Run the puzzle for the given DAY and PART.
+For example, to run day 5 part 2: `mix star 5 2`.
