@@ -20,7 +20,8 @@ defmodule AOC.Day3 do
       {dx, dy} = decode(token)
       [{x + dx, y + dy} | points]
     end)
-    |> Enum.chunk_every(2, 1)
+    |> Enum.reverse
+    |> Enum.chunk_every(2, 1, :discard)
   end
 
   defp decode("R" <> n), do: {String.to_integer(n), 0}
