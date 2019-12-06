@@ -65,14 +65,10 @@ defmodule AOC.Intcode do
       nil -> {:halt, {memory, pointer}}
       99 -> {:halt, {memory, pointer}}
       1 ->
-        left = Enum.at(memory, pointer + 1)
-        right = Enum.at(memory, pointer + 2)
-        store = Enum.at(memory, pointer + 3)
+        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
         {:ok, {do_command(memory, left, right, store, &+/2), pointer + 4}}
       2 ->
-        left = Enum.at(memory, pointer + 1)
-        right = Enum.at(memory, pointer + 2)
-        store = Enum.at(memory, pointer + 3)
+        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
         {:ok, {do_command(memory, left, right, store, &*/2), pointer + 4}}
       _ -> {:ok, {memory, pointer + 1}}
     end
