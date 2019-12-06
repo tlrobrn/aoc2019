@@ -90,6 +90,30 @@ defmodule AOC.Intcode do
       4 ->
         param = Enum.at(memory, pointer + 1)
         {:ok, {memory, pointer + 2, inputs, [Enum.at(memory, param) | outputs]}}
+      5 ->
+        [left, right] = Enum.slice(memory, pointer+1..pointer+2)
+        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
+        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        new_pointer = if left_value == 0, do: pointer + 3, else: right_value
+        {:ok, {memory, new_pointer, inputs, outputs}}
+      6 ->
+        [left, right] = Enum.slice(memory, pointer+1..pointer+2)
+        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
+        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        new_pointer = if left_value == 0, do: right_value, else: pointer + 3
+        {:ok, {memory, new_pointer, inputs, outputs}}
+      7 ->
+        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
+        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
+        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        result = if left_value < right_value, do: 1, else: 0
+        {:ok, {List.replace_at(memory, store, result), pointer + 4, inputs, outputs}}
+      8 ->
+        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
+        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
+        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        result = if left_value == right_value, do: 1, else: 0
+        {:ok, {List.replace_at(memory, store, result), pointer + 4, inputs, outputs}}
       _ ->
         raise "Bad opcode: #{Enum.at(memory, pointer)}, at location: #{pointer}"
     end
