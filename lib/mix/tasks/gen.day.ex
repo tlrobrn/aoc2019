@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Gen.Day do
   defp day_test(day) do
     """
     defmodule AOC.Day#{day}.Test do
-      use ExUnit.Case
+      use ExUnit.Case, async: true
       alias AOC.Day#{day}
     end
     """
@@ -60,7 +60,7 @@ defmodule Mix.Tasks.Gen.Day do
   defp part_test(day, part) do
     """
     defmodule AOC.Day#{day}.Part#{part}.Test do
-      use ExUnit.Case
+      use ExUnit.Case, async: true
       alias AOC.Day#{day}.Part#{part}
     end
     """

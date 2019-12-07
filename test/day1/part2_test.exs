@@ -1,5 +1,5 @@
 defmodule AOC.Day1.Part2.Test do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias AOC.Day1.Part2
 
   test "example 1" do
