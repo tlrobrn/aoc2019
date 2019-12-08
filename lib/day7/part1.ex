@@ -19,8 +19,9 @@ defmodule AOC.Day7.Part1 do
   end
 
   defp run_amplifier(memory, inputs) do
-    {:ok, pid} = Intcode.start_link(memory, inputs)
+    {:ok, pid} = Intcode.start_link(memory)
     Intcode.run(pid)
+    Enum.each(inputs, &Intcode.input(pid, &1))
     [output] = Intcode.output(pid)
     output
   end

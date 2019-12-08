@@ -3,8 +3,8 @@ defmodule AOC.Intcode do
 
   # Client
 
-  def start_link(instructions, inputs \\ Stream.cycle([nil])) do
-    GenServer.start_link(__MODULE__, {instructions, inputs})
+  def start_link(instructions) do
+    GenServer.start_link(__MODULE__, instructions)
   end
 
   def set(pid, key_value_pairs) do
@@ -23,14 +23,24 @@ defmodule AOC.Intcode do
     GenServer.call(pid, :output)
   end
 
+  def input(pid, input) do
+    GenServer.cast(pid, {:input, input})
+  end
+
   # Server
 
   defstruct memory: %{}, pointer: 0, inputs: [], outputs: []
 
   @impl true
-  def init({instructions, inputs}) do
+  def init(instructions) do
     memory = initialize_memory(instructions)
-    {:ok, %__MODULE__{memory: memory, inputs: inputs}}
+    {:ok, %__MODULE__{memory: memory}}
+  end
+
+  @impl true
+  def handle_cast({:input, input}, %__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs}) do
+    {new_memory, new_pointer, new_inputs, new_outputs} = run(memory, pointer, inputs ++ [input], outputs)
+    {:noreply, %__MODULE__{memory: new_memory, pointer: new_pointer, inputs: new_inputs, outputs: new_outputs}}
   end
 
   @impl true
@@ -84,9 +94,13 @@ defmodule AOC.Intcode do
         right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
         {:ok, {List.replace_at(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
       3 ->
-        store = Enum.at(memory, pointer + 1)
-        input = hd(Enum.take(inputs, 1))
-        {:ok, {List.replace_at(memory, store, input), pointer + 2, Stream.drop(inputs, 1), outputs}}
+        if Enum.empty?(inputs) do
+          {:halt, {memory, pointer, inputs, outputs}}
+        else
+          store = Enum.at(memory, pointer + 1)
+          [input | new_inputs] = inputs
+          {:ok, {List.replace_at(memory, store, input), pointer + 2, new_inputs, outputs}}
+        end
       4 ->
         param = Enum.at(memory, pointer + 1)
         {:ok, {memory, pointer + 2, inputs, [Enum.at(memory, param) | outputs]}}

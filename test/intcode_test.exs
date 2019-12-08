@@ -40,9 +40,9 @@ defmodule AOC.Intcode.Test do
       1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
       999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99,
     ]
-    input = [0]
-    {:ok, pid} = Intcode.start_link(instructions, input)
+    {:ok, pid} = Intcode.start_link(instructions)
     Intcode.run(pid)
+    Intcode.input(pid, 0)
     output = Intcode.output(pid)
 
     assert [nil] == output
@@ -56,9 +56,9 @@ defmodule AOC.Intcode.Test do
       1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
       999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99,
     ]
-    input = [8]
-    {:ok, pid} = Intcode.start_link(instructions, input)
+    {:ok, pid} = Intcode.start_link(instructions)
     Intcode.run(pid)
+    Intcode.input(pid, 8)
     output = Intcode.output(pid)
 
     assert [1000] == output
@@ -70,9 +70,9 @@ defmodule AOC.Intcode.Test do
       1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
       999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99,
     ]
-    input = [12]
-    {:ok, pid} = Intcode.start_link(instructions, input)
+    {:ok, pid} = Intcode.start_link(instructions)
     Intcode.run(pid)
+    Intcode.input(pid, 12)
     output = Intcode.output(pid)
 
     assert [1001] == output
