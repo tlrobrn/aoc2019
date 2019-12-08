@@ -24,7 +24,7 @@ defmodule AOC.Intcode do
   end
 
   def input(pid, input) do
-    GenServer.cast(pid, {:input, input})
+    GenServer.call(pid, {:input, input})
   end
 
   # Server
@@ -35,12 +35,6 @@ defmodule AOC.Intcode do
   def init(instructions) do
     memory = initialize_memory(instructions)
     {:ok, %__MODULE__{memory: memory}}
-  end
-
-  @impl true
-  def handle_cast({:input, input}, %__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs}) do
-    {new_memory, new_pointer, new_inputs, new_outputs} = run(memory, pointer, inputs ++ [input], outputs)
-    {:noreply, %__MODULE__{memory: new_memory, pointer: new_pointer, inputs: new_inputs, outputs: new_outputs}}
   end
 
   @impl true
@@ -67,6 +61,13 @@ defmodule AOC.Intcode do
   @impl true
   def handle_call(:output, _from, %__MODULE__{outputs: outputs} = state) do
     {:reply, Enum.reverse(outputs), state}
+  end
+
+  @impl true
+  def handle_call({:input, input}, _from, %__MODULE__{inputs: inputs} = state) do
+    GenServer.cast(self(), :run)
+    new_inputs = inputs ++ [input]
+    {:reply, new_inputs, %__MODULE__{state | inputs: new_inputs}}
   end
 
   defp initialize_memory(instructions), do: instructions
