@@ -27,9 +27,13 @@ defmodule AOC.Intcode do
     GenServer.call(pid, {:input, input})
   end
 
+  def status(pid) do
+    GenServer.call(pid, :status)
+  end
+
   # Server
 
-  defstruct memory: %{}, pointer: 0, inputs: [], outputs: []
+  defstruct memory: %{}, pointer: 0, inputs: [], outputs: [], status: :ready
 
   @impl true
   def init(instructions) do
@@ -49,8 +53,8 @@ defmodule AOC.Intcode do
 
   @impl true
   def handle_cast(:run, %__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs}) do
-    {new_memory, new_pointer, new_inputs, new_outputs} = run(memory, pointer, inputs, outputs)
-    {:noreply, %__MODULE__{memory: new_memory, pointer: new_pointer, inputs: new_inputs, outputs: new_outputs}}
+    {new_memory, new_pointer, new_inputs, new_outputs, new_status} = run(memory, pointer, inputs, outputs)
+    {:noreply, %__MODULE__{memory: new_memory, pointer: new_pointer, inputs: new_inputs, outputs: new_outputs, status: new_status}}
   end
 
   @impl true
@@ -60,7 +64,7 @@ defmodule AOC.Intcode do
 
   @impl true
   def handle_call(:output, _from, %__MODULE__{outputs: outputs} = state) do
-    {:reply, Enum.reverse(outputs), state}
+    {:reply, Enum.reverse(outputs), %__MODULE__{state | outputs: []}}
   end
 
   @impl true
@@ -68,6 +72,11 @@ defmodule AOC.Intcode do
     GenServer.cast(self(), :run)
     new_inputs = inputs ++ [input]
     {:reply, new_inputs, %__MODULE__{state | inputs: new_inputs}}
+  end
+
+  @impl true
+  def handle_call(:status, _from, %__MODULE__{status: status} = state) do
+    {:reply, status, state}
   end
 
   defp initialize_memory(instructions), do: instructions
@@ -82,8 +91,8 @@ defmodule AOC.Intcode do
   defp step(memory, pointer, inputs, outputs) when is_list(memory) do
     [_store_mode, right_mode, left_mode, code] = opcode(memory, pointer)
     case code do
-      nil -> {:halt, {memory, pointer, inputs, outputs}}
-      99 -> {:halt, {memory, pointer, inputs, outputs}}
+      nil -> {:halt, {memory, pointer, inputs, outputs, :halted}}
+      99 -> {:halt, {memory, pointer, inputs, outputs, :halted}}
       1 ->
         [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
         left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
@@ -96,7 +105,7 @@ defmodule AOC.Intcode do
         {:ok, {List.replace_at(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
       3 ->
         if Enum.empty?(inputs) do
-          {:halt, {memory, pointer, inputs, outputs}}
+          {:halt, {memory, pointer, inputs, outputs, :ready}}
         else
           store = Enum.at(memory, pointer + 1)
           [input | new_inputs] = inputs
