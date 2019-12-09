@@ -1,4 +1,15 @@
 defmodule AOC.Intcode do
+  # Puzzle input parsing
+  defmacro __using__(_opts) do
+    quote do
+      defp parse(lines) do
+        lines
+        |> Stream.flat_map(&String.split(&1, ",", trim: true))
+        |> Enum.map(&String.to_integer/1)
+      end
+    end
+  end
+
   use GenServer
 
   # Client
@@ -84,26 +95,28 @@ defmodule AOC.Intcode do
     |> Map.new(fn {v, k} -> {k, v} end)
   end
 
-  defp step(%__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs} = state) do
-    [_third_mode, second_mode, first_mode, code] = opcode(memory, pointer)
+  defp step(%__MODULE__{memory: memory, pointer: pointer, relative_offset: relative_offset, inputs: inputs, outputs: outputs} = state) do
+    [third_mode, second_mode, first_mode, code] = opcode(memory, pointer)
     case code do
-      nil -> %__MODULE__{state | status: :halted}
       99 -> %__MODULE__{state | status: :halted}
       1 ->
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        step(%__MODULE__{state | memory: Map.put(memory, third, first_value + second_value), pointer: pointer + 4})
+        store = if third_mode == 2, do: third + relative_offset, else: third
+        step(%__MODULE__{state | memory: Map.put(memory, store, first_value + second_value), pointer: pointer + 4})
       2 ->
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        step(%__MODULE__{state | memory: Map.put(memory, third, first_value * second_value), pointer: pointer + 4})
+        store = if third_mode == 2, do: third + relative_offset, else: third
+        step(%__MODULE__{state | memory: Map.put(memory, store, first_value * second_value), pointer: pointer + 4})
       3 ->
         if Enum.empty?(inputs) do
           %__MODULE__{state | status: :ready}
         else
-          store = Map.get(memory, pointer + 1, 0)
+          param = Map.get(memory, pointer + 1, 0)
+          store = if first_mode == 2, do: param + relative_offset, else: param
           [input | new_inputs] = inputs
           step(%__MODULE__{state | memory: Map.put(memory, store, input), pointer: pointer + 2, inputs: new_inputs})
         end
@@ -126,17 +139,20 @@ defmodule AOC.Intcode do
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
+        store = if third_mode == 2, do: third + relative_offset, else: third
         result = if first_value < second_value, do: 1, else: 0
-        step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
+        step(%__MODULE__{state | memory: Map.put(memory, store, result), pointer: pointer + 4})
       8 ->
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
+        store = if third_mode == 2, do: third + relative_offset, else: third
         result = if first_value == second_value, do: 1, else: 0
-        step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
+        step(%__MODULE__{state | memory: Map.put(memory, store, result), pointer: pointer + 4})
       9 ->
         param = Map.get(memory, pointer + 1, 0)
-        step(%__MODULE__{state | pointer: pointer + 2, relative_offset: fetch(state, param, first_mode)})
+        new_offset = relative_offset + fetch(state, param, first_mode)
+        step(%__MODULE__{state | pointer: pointer + 2, relative_offset: new_offset})
       _ ->
         raise "Bad opcode: #{Map.get(memory, pointer)}, at location: #{pointer}"
     end
