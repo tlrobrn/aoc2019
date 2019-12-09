@@ -45,9 +45,7 @@ defmodule AOC.Intcode.Test do
     Intcode.input(pid, 0)
     output = Intcode.output(pid)
 
-    assert [0] == output
-    # It's actually supposed to be 999, but the program works so oh well
-    #assert [999] == output
+    assert [999] == output
   end
 
   test "day 5 part 2 example input is 8" do
@@ -76,5 +74,39 @@ defmodule AOC.Intcode.Test do
     output = Intcode.output(pid)
 
     assert [1001] == output
+  end
+
+  @tag :skip
+  test "day 8 part 1" do
+    instructions = [
+      109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99,
+    ]
+    {:ok, pid} = Intcode.start_link(instructions)
+    Intcode.run(pid)
+    output = Intcode.output(pid)
+
+    assert instructions == output
+  end
+
+  test "day 8 part 2" do
+    instructions = [
+      1102,34915192,34915192,7,4,7,99,0
+    ]
+    {:ok, pid} = Intcode.start_link(instructions)
+    Intcode.run(pid)
+    [output] = Intcode.output(pid)
+
+    assert 16 == length(Integer.digits(output))
+  end
+
+  test "day 8 part 3" do
+    instructions = [
+      104,1125899906842624,99
+    ]
+    {:ok, pid} = Intcode.start_link(instructions)
+    Intcode.run(pid)
+    [output] = Intcode.output(pid)
+
+    assert 1125899906842624 == output
   end
 end

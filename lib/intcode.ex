@@ -109,7 +109,7 @@ defmodule AOC.Intcode do
         end
       4 ->
         param = Map.get(memory, pointer + 1, 0)
-        step(%__MODULE__{state | pointer: pointer + 2, outputs: [Map.get(memory, param, 0) | outputs]})
+        step(%__MODULE__{state | pointer: pointer + 2, outputs: [fetch(state, param, first_mode) | outputs]})
       5 ->
         [first, second] = parameters(memory, pointer, 2)
         first_value = fetch(state, first, first_mode)
@@ -134,6 +134,9 @@ defmodule AOC.Intcode do
         second_value = fetch(state, second, second_mode)
         result = if first_value == second_value, do: 1, else: 0
         step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
+      9 ->
+        param = Map.get(memory, pointer + 1, 0)
+        step(%__MODULE__{state | pointer: pointer + 2, relative_offset: fetch(state, param, first_mode)})
       _ ->
         raise "Bad opcode: #{Map.get(memory, pointer)}, at location: #{pointer}"
     end
