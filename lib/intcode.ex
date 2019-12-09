@@ -58,7 +58,7 @@ defmodule AOC.Intcode do
 
   @impl true
   def handle_call({:read, address}, _from, %__MODULE__{memory: memory} = state) do
-    {:reply, Map.get(memory, address), state}
+    {:reply, Map.get(memory, address, 0), state}
   end
 
   @impl true
@@ -91,13 +91,13 @@ defmodule AOC.Intcode do
       99 -> %__MODULE__{state | status: :halted}
       1 ->
         [first, second, third] = parameters(memory, pointer, 3)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         step(%__MODULE__{state | memory: Map.put(memory, third, first_value + second_value), pointer: pointer + 4})
       2 ->
         [first, second, third] = parameters(memory, pointer, 3)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         step(%__MODULE__{state | memory: Map.put(memory, third, first_value * second_value), pointer: pointer + 4})
       3 ->
         if Enum.empty?(inputs) do
@@ -112,26 +112,26 @@ defmodule AOC.Intcode do
         step(%__MODULE__{state | pointer: pointer + 2, outputs: [Map.get(memory, param, 0) | outputs]})
       5 ->
         [first, second] = parameters(memory, pointer, 2)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         new_pointer = if first_value == 0, do: pointer + 3, else: second_value
         step(%__MODULE__{state | pointer: new_pointer})
       6 ->
         [first, second] = parameters(memory, pointer, 2)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         new_pointer = if first_value == 0, do: second_value, else: pointer + 3
         step(%__MODULE__{state | pointer: new_pointer})
       7 ->
         [first, second, third] = parameters(memory, pointer, 3)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         result = if first_value < second_value, do: 1, else: 0
         step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
       8 ->
         [first, second, third] = parameters(memory, pointer, 3)
-        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
-        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        first_value = fetch(state, first, first_mode)
+        second_value = fetch(state, second, second_mode)
         result = if first_value == second_value, do: 1, else: 0
         step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
       _ ->
@@ -141,6 +141,14 @@ defmodule AOC.Intcode do
 
   defp parameters(memory, pointer, n) do
     1..n |> Enum.map(&Map.get(memory, pointer + &1, 0))
+  end
+
+  defp fetch(%__MODULE__{memory: memory}, parameter, 0) do
+    Map.get(memory, parameter, 0)
+  end
+  defp fetch(_, parameter, 1), do: parameter
+  defp fetch(%__MODULE__{memory: memory, relative_offset: offset}, parameter, 2) when offset + parameter >= 0 do
+    Map.get(memory, offset + parameter, 0)
   end
 
   defp opcode(memory, pointer) do
