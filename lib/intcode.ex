@@ -99,69 +99,69 @@ defmodule AOC.Intcode do
       99 -> {:halt, {memory, pointer, inputs, outputs, :halted}}
       1 ->
         {left, right, store} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
-          Map.get(memory, pointer + 3),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
+          Map.get(memory, pointer + 3, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         {:ok, {Map.put(memory, store, left_value + right_value), pointer + 4, inputs, outputs}}
       2 ->
         {left, right, store} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
-          Map.get(memory, pointer + 3),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
+          Map.get(memory, pointer + 3, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         {:ok, {Map.put(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
       3 ->
         if Enum.empty?(inputs) do
           {:halt, {memory, pointer, inputs, outputs, :ready}}
         else
-          store = Map.get(memory, pointer + 1)
+          store = Map.get(memory, pointer + 1, 0)
           [input | new_inputs] = inputs
           {:ok, {Map.put(memory, store, input), pointer + 2, new_inputs, outputs}}
         end
       4 ->
-        param = Map.get(memory, pointer + 1)
-        {:ok, {memory, pointer + 2, inputs, [Map.get(memory, param) | outputs]}}
+        param = Map.get(memory, pointer + 1, 0)
+        {:ok, {memory, pointer + 2, inputs, [Map.get(memory, param, 0) | outputs]}}
       5 ->
         {left, right} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         new_pointer = if left_value == 0, do: pointer + 3, else: right_value
         {:ok, {memory, new_pointer, inputs, outputs}}
       6 ->
         {left, right} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         new_pointer = if left_value == 0, do: right_value, else: pointer + 3
         {:ok, {memory, new_pointer, inputs, outputs}}
       7 ->
         {left, right, store} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
-          Map.get(memory, pointer + 3),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
+          Map.get(memory, pointer + 3, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         result = if left_value < right_value, do: 1, else: 0
         {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
       8 ->
         {left, right, store} = {
-          Map.get(memory, pointer + 1),
-          Map.get(memory, pointer + 2),
-          Map.get(memory, pointer + 3),
+          Map.get(memory, pointer + 1, 0),
+          Map.get(memory, pointer + 2, 0),
+          Map.get(memory, pointer + 3, 0),
         }
-        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
         result = if left_value == right_value, do: 1, else: 0
         {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
       _ ->
@@ -170,7 +170,7 @@ defmodule AOC.Intcode do
   end
 
   defp opcode(memory, pointer) do
-    Map.get(memory, pointer)
+    Map.get(memory, pointer, 0)
     |> Integer.to_string()
     |> String.pad_leading(5, "0")
     |> String.split("", parts: 4, trim: true)

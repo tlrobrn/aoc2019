@@ -45,7 +45,7 @@ defmodule AOC.Intcode.Test do
     Intcode.input(pid, 0)
     output = Intcode.output(pid)
 
-    assert [nil] == output
+    assert [0] == output
     # It's actually supposed to be 999, but the program works so oh well
     #assert [999] == output
   end
