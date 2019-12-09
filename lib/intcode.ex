@@ -42,11 +42,11 @@ defmodule AOC.Intcode do
   end
 
   @impl true
-  def handle_cast({:set, key_value_pairs}, %__MODULE__{memory: memory} = state) when is_list(memory) do
+  def handle_cast({:set, key_value_pairs}, %__MODULE__{memory: memory} = state) do
     new_memory =
       key_value_pairs
       |> Enum.reduce(memory, fn {k, v}, acc ->
-        acc |> List.replace_at(k, v)
+        acc |> Map.put(k, v)
       end)
     {:noreply, %__MODULE__{state | memory: new_memory}}
   end
@@ -58,8 +58,8 @@ defmodule AOC.Intcode do
   end
 
   @impl true
-  def handle_call({:read, address}, _from, %__MODULE__{memory: memory} = state) when is_list(memory) do
-    {:reply, Enum.at(memory, address), state}
+  def handle_call({:read, address}, _from, %__MODULE__{memory: memory} = state) do
+    {:reply, Map.get(memory, address), state}
   end
 
   @impl true
@@ -79,7 +79,11 @@ defmodule AOC.Intcode do
     {:reply, status, state}
   end
 
-  defp initialize_memory(instructions), do: instructions
+  defp initialize_memory(instructions) do
+    instructions
+    |> Stream.with_index()
+    |> Map.new(fn {v, k} -> {k, v} end)
+  end
 
   defp run(memory, pointer, inputs, outputs) do
     case step(memory, pointer, inputs, outputs) do
@@ -88,63 +92,85 @@ defmodule AOC.Intcode do
     end
   end
 
-  defp step(memory, pointer, inputs, outputs) when is_list(memory) do
+  defp step(memory, pointer, inputs, outputs) do
     [_store_mode, right_mode, left_mode, code] = opcode(memory, pointer)
     case code do
       nil -> {:halt, {memory, pointer, inputs, outputs, :halted}}
       99 -> {:halt, {memory, pointer, inputs, outputs, :halted}}
       1 ->
-        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
-        {:ok, {List.replace_at(memory, store, left_value + right_value), pointer + 4, inputs, outputs}}
+        {left, right, store} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 3),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        {:ok, {Map.put(memory, store, left_value + right_value), pointer + 4, inputs, outputs}}
       2 ->
-        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
-        {:ok, {List.replace_at(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
+        {left, right, store} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 3),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
+        {:ok, {Map.put(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
       3 ->
         if Enum.empty?(inputs) do
           {:halt, {memory, pointer, inputs, outputs, :ready}}
         else
-          store = Enum.at(memory, pointer + 1)
+          store = Map.get(memory, pointer + 1)
           [input | new_inputs] = inputs
-          {:ok, {List.replace_at(memory, store, input), pointer + 2, new_inputs, outputs}}
+          {:ok, {Map.put(memory, store, input), pointer + 2, new_inputs, outputs}}
         end
       4 ->
-        param = Enum.at(memory, pointer + 1)
-        {:ok, {memory, pointer + 2, inputs, [Enum.at(memory, param) | outputs]}}
+        param = Map.get(memory, pointer + 1)
+        {:ok, {memory, pointer + 2, inputs, [Map.get(memory, param) | outputs]}}
       5 ->
-        [left, right] = Enum.slice(memory, pointer+1..pointer+2)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        {left, right} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
         new_pointer = if left_value == 0, do: pointer + 3, else: right_value
         {:ok, {memory, new_pointer, inputs, outputs}}
       6 ->
-        [left, right] = Enum.slice(memory, pointer+1..pointer+2)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        {left, right} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
         new_pointer = if left_value == 0, do: right_value, else: pointer + 3
         {:ok, {memory, new_pointer, inputs, outputs}}
       7 ->
-        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        {left, right, store} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 3),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
         result = if left_value < right_value, do: 1, else: 0
-        {:ok, {List.replace_at(memory, store, result), pointer + 4, inputs, outputs}}
+        {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
       8 ->
-        [left, right, store] = Enum.slice(memory, pointer+1..pointer+3)
-        left_value = if left_mode == 0, do: Enum.at(memory, left), else: left
-        right_value = if right_mode == 0, do: Enum.at(memory, right), else: right
+        {left, right, store} = {
+          Map.get(memory, pointer + 1),
+          Map.get(memory, pointer + 2),
+          Map.get(memory, pointer + 3),
+        }
+        left_value = if left_mode == 0, do: Map.get(memory, left), else: left
+        right_value = if right_mode == 0, do: Map.get(memory, right), else: right
         result = if left_value == right_value, do: 1, else: 0
-        {:ok, {List.replace_at(memory, store, result), pointer + 4, inputs, outputs}}
+        {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
       _ ->
-        raise "Bad opcode: #{Enum.at(memory, pointer)}, at location: #{pointer}"
+        raise "Bad opcode: #{Map.get(memory, pointer)}, at location: #{pointer}"
     end
   end
 
-  defp opcode(memory, pointer) when is_list(memory) do
-    Enum.at(memory, pointer)
+  defp opcode(memory, pointer) do
+    Map.get(memory, pointer)
     |> Integer.to_string()
     |> String.pad_leading(5, "0")
     |> String.split("", parts: 4, trim: true)
