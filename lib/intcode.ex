@@ -33,7 +33,7 @@ defmodule AOC.Intcode do
 
   # Server
 
-  defstruct memory: %{}, pointer: 0, inputs: [], outputs: [], status: :ready
+  defstruct memory: %{}, pointer: 0, relative_offset: 0, inputs: [], outputs: [], status: :ready
 
   @impl true
   def init(instructions) do
@@ -52,9 +52,8 @@ defmodule AOC.Intcode do
   end
 
   @impl true
-  def handle_cast(:run, %__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs}) do
-    {new_memory, new_pointer, new_inputs, new_outputs, new_status} = run(memory, pointer, inputs, outputs)
-    {:noreply, %__MODULE__{memory: new_memory, pointer: new_pointer, inputs: new_inputs, outputs: new_outputs, status: new_status}}
+  def handle_cast(:run, state) do
+    {:noreply, step(%__MODULE__{state | status: :running})}
   end
 
   @impl true
@@ -85,88 +84,63 @@ defmodule AOC.Intcode do
     |> Map.new(fn {v, k} -> {k, v} end)
   end
 
-  defp run(memory, pointer, inputs, outputs) do
-    case step(memory, pointer, inputs, outputs) do
-      {:ok, {new_memory, new_pointer, new_inputs, new_outputs}} -> run(new_memory, new_pointer, new_inputs, new_outputs)
-      {:halt, new_state} -> new_state
-    end
-  end
-
-  defp step(memory, pointer, inputs, outputs) do
-    [_store_mode, right_mode, left_mode, code] = opcode(memory, pointer)
+  defp step(%__MODULE__{memory: memory, pointer: pointer, inputs: inputs, outputs: outputs} = state) do
+    [_third_mode, second_mode, first_mode, code] = opcode(memory, pointer)
     case code do
-      nil -> {:halt, {memory, pointer, inputs, outputs, :halted}}
-      99 -> {:halt, {memory, pointer, inputs, outputs, :halted}}
+      nil -> %__MODULE__{state | status: :halted}
+      99 -> %__MODULE__{state | status: :halted}
       1 ->
-        {left, right, store} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-          Map.get(memory, pointer + 3, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        {:ok, {Map.put(memory, store, left_value + right_value), pointer + 4, inputs, outputs}}
+        [first, second, third] = parameters(memory, pointer, 3)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        step(%__MODULE__{state | memory: Map.put(memory, third, first_value + second_value), pointer: pointer + 4})
       2 ->
-        {left, right, store} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-          Map.get(memory, pointer + 3, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        {:ok, {Map.put(memory, store, left_value * right_value), pointer + 4, inputs, outputs}}
+        [first, second, third] = parameters(memory, pointer, 3)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        step(%__MODULE__{state | memory: Map.put(memory, third, first_value * second_value), pointer: pointer + 4})
       3 ->
         if Enum.empty?(inputs) do
-          {:halt, {memory, pointer, inputs, outputs, :ready}}
+          %__MODULE__{state | status: :ready}
         else
           store = Map.get(memory, pointer + 1, 0)
           [input | new_inputs] = inputs
-          {:ok, {Map.put(memory, store, input), pointer + 2, new_inputs, outputs}}
+          step(%__MODULE__{state | memory: Map.put(memory, store, input), pointer: pointer + 2, inputs: new_inputs})
         end
       4 ->
         param = Map.get(memory, pointer + 1, 0)
-        {:ok, {memory, pointer + 2, inputs, [Map.get(memory, param, 0) | outputs]}}
+        step(%__MODULE__{state | pointer: pointer + 2, outputs: [Map.get(memory, param, 0) | outputs]})
       5 ->
-        {left, right} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        new_pointer = if left_value == 0, do: pointer + 3, else: right_value
-        {:ok, {memory, new_pointer, inputs, outputs}}
+        [first, second] = parameters(memory, pointer, 2)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        new_pointer = if first_value == 0, do: pointer + 3, else: second_value
+        step(%__MODULE__{state | pointer: new_pointer})
       6 ->
-        {left, right} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        new_pointer = if left_value == 0, do: right_value, else: pointer + 3
-        {:ok, {memory, new_pointer, inputs, outputs}}
+        [first, second] = parameters(memory, pointer, 2)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        new_pointer = if first_value == 0, do: second_value, else: pointer + 3
+        step(%__MODULE__{state | pointer: new_pointer})
       7 ->
-        {left, right, store} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-          Map.get(memory, pointer + 3, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        result = if left_value < right_value, do: 1, else: 0
-        {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
+        [first, second, third] = parameters(memory, pointer, 3)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        result = if first_value < second_value, do: 1, else: 0
+        step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
       8 ->
-        {left, right, store} = {
-          Map.get(memory, pointer + 1, 0),
-          Map.get(memory, pointer + 2, 0),
-          Map.get(memory, pointer + 3, 0),
-        }
-        left_value = if left_mode == 0, do: Map.get(memory, left, 0), else: left
-        right_value = if right_mode == 0, do: Map.get(memory, right, 0), else: right
-        result = if left_value == right_value, do: 1, else: 0
-        {:ok, {Map.put(memory, store, result), pointer + 4, inputs, outputs}}
+        [first, second, third] = parameters(memory, pointer, 3)
+        first_value = if first_mode == 0, do: Map.get(memory, first, 0), else: first
+        second_value = if second_mode == 0, do: Map.get(memory, second, 0), else: second
+        result = if first_value == second_value, do: 1, else: 0
+        step(%__MODULE__{state | memory: Map.put(memory, third, result), pointer: pointer + 4})
       _ ->
         raise "Bad opcode: #{Map.get(memory, pointer)}, at location: #{pointer}"
     end
+  end
+
+  defp parameters(memory, pointer, n) do
+    1..n |> Enum.map(&Map.get(memory, pointer + &1, 0))
   end
 
   defp opcode(memory, pointer) do
