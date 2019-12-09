@@ -7,9 +7,7 @@ defmodule AOC.Day5.Part2 do
     Intcode.input(pid, 5)
     outputs = Intcode.output(pid)
     if Enum.count(outputs, &(&1 != 0)) == 1 do
-      outputs
-      |> Enum.reverse()
-      |> hd()
+      List.last(outputs)
     else
       raise "diagnostics failed, outputs: [#{Enum.join(outputs, ", ")}]"
     end
