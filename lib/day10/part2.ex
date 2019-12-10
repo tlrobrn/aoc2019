@@ -2,8 +2,7 @@ defmodule AOC.Day10.Part2 do
   def run(input) do
     {x, y} =
       input
-      |> lines()
-      |> Map.values()
+      |> Stream.map(&lines_for_point(&1, input))
       |> Enum.max_by(&length/1)
       |> destroy_asteroids()
       |> Enum.at(199)
@@ -28,12 +27,6 @@ defmodule AOC.Day10.Part2 do
       end,
       fn _ -> nil end
     )
-  end
-
-  defp lines(points) do
-    Enum.reduce(points, %{}, fn point, lines ->
-      Map.put_new(lines, point, lines_for_point(point, points))
-    end)
   end
 
   defp lines_for_point(p, points) do

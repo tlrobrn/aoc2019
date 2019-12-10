@@ -1,16 +1,9 @@
 defmodule AOC.Day10.Part1 do
   def run(input) do
     input
-    |> visible_asteroids()
-    |> Map.values()
+    |> Stream.map(&lines_for_point(&1, input))
     |> Stream.map(&length/1)
     |> Enum.max()
-  end
-
-  defp visible_asteroids(points) do
-    Enum.reduce(points, %{}, fn point, lines ->
-      Map.put_new(lines, point, lines_for_point(point, points))
-    end)
   end
 
   defp lines_for_point({x0, y0} = p, points) do
