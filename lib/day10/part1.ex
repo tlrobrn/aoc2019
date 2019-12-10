@@ -8,9 +8,8 @@ defmodule AOC.Day10.Part1 do
   defp lines_for_point(p, points) do
     points
     |> Stream.reject(&(&1 == p))
-    |> Enum.reduce(MapSet.new(), fn q, visible ->
-      MapSet.put(visible, angle(p, q))
-    end)
+    |> Stream.map(&angle(p, &1))
+    |> MapSet.new()
     |> MapSet.size()
   end
 
