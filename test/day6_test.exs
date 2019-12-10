@@ -3,7 +3,7 @@ defmodule AOC.Day6.Test do
   alias AOC.Day6
 
   test "part1" do
-    assert 145250 == Day6.part1()
+    assert 145_250 == Day6.part1()
   end
 
   test "part2" do

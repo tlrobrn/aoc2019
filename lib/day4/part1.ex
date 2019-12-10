@@ -3,7 +3,7 @@ defmodule AOC.Day4.Part1 do
     min..max |> Enum.count(&valid?/1)
   end
 
-  def valid?(password) when password > 99999 and password <= 999999 do
+  def valid?(password) when password > 99999 and password <= 999_999 do
     paired_digits =
       password
       |> Integer.digits()

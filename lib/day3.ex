@@ -4,12 +4,12 @@ defmodule AOC.Day3 do
   end
 
   def intersect_at([{x0, y}, {x1, y}], [{x, y0}, {x, y1}])
-  when ((y - y0) * (y - y1) <= 0) and ((x - x0) * (x - x1) <= 0),
-    do: {x, y}
+      when (y - y0) * (y - y1) <= 0 and (x - x0) * (x - x1) <= 0,
+      do: {x, y}
 
   def intersect_at([{x, y0}, {x, y1}], [{x0, y}, {x1, y}])
-  when ((y - y0) * (y - y1) <= 0) and ((x - x0) * (x - x1) <= 0),
-    do: {x, y}
+      when (y - y0) * (y - y1) <= 0 and (x - x0) * (x - x1) <= 0,
+      do: {x, y}
 
   def intersect_at(_, _), do: nil
 
@@ -20,7 +20,7 @@ defmodule AOC.Day3 do
       {dx, dy} = decode(token)
       [{x + dx, y + dy} | points]
     end)
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Enum.chunk_every(2, 1, :discard)
   end
 

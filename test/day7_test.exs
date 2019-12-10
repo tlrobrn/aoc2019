@@ -7,6 +7,6 @@ defmodule AOC.Day7.Test do
   end
 
   test "part2" do
-    assert 69113332 = Day7.part2()
+    assert 69_113_332 = Day7.part2()
   end
 end

@@ -6,6 +6,7 @@ defmodule AOC.Day9.Part1 do
     Intcode.run(pid)
     Intcode.input(pid, 1)
     outputs = Intcode.output(pid)
+
     if Enum.count(outputs, &(&1 != 0)) == 1 do
       List.last(outputs)
     else

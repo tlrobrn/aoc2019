@@ -13,12 +13,12 @@ defmodule AOC.Day1.Part2.Test do
   end
 
   test "example 3" do
-    input = [100756]
+    input = [100_756]
     assert 50346 == Part2.run(input)
   end
 
   test "examples" do
-    input = [14, 1969, 100756]
+    input = [14, 1969, 100_756]
     assert 2 + 966 + 50346 == Part2.run(input)
   end
 end

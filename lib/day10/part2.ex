@@ -6,6 +6,7 @@ defmodule AOC.Day10.Part2 do
       |> Enum.max_by(&length/1)
       |> destroy_asteroids()
       |> Enum.at(199)
+
     100 * x + y
   end
 
@@ -15,12 +16,15 @@ defmodule AOC.Day10.Part2 do
       fn
         {[], _i} ->
           {:halt, nil}
+
         {lines, i} when i >= length(lines) ->
           {[], {lines, 0}}
+
         {lines, i} ->
           case Enum.at(lines, i) do
             [asteroid | []] ->
               {[asteroid], {List.delete_at(lines, i), i}}
+
             [asteroid | rest] ->
               {[asteroid], {List.replace_at(lines, i, rest), i + 1}}
           end
@@ -33,7 +37,7 @@ defmodule AOC.Day10.Part2 do
     points
     |> Stream.reject(&(&1 == p))
     |> Enum.reduce(%{}, fn q, visible ->
-        Map.update(visible, angle(p, q), [q], &[q | &1])
+      Map.update(visible, angle(p, q), [q], &[q | &1])
     end)
     |> Enum.map(fn {r, points} ->
       {r, Enum.sort_by(points, &dist(p, &1))}
@@ -47,7 +51,10 @@ defmodule AOC.Day10.Part2 do
       r -> r
     end
   end
-  defp angle_against_vertical(vector), do: :math.atan2(determinant(vector, {0, 1}), dot_product(vector, {0, 1}))
+
+  defp angle_against_vertical(vector),
+    do: :math.atan2(determinant(vector, {0, 1}), dot_product(vector, {0, 1}))
+
   defp dot_product({x0, y0}, {x1, y1}), do: x0 * x1 + y0 * y1
   defp determinant({x0, y0}, {x1, y1}), do: x0 * y1 - y0 * x1
   defp dist({x0, y0}, {x1, y1}), do: :math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0))

@@ -10,8 +10,9 @@ defmodule AOC.Day7.Part1 do
   end
 
   defp permute([]), do: [[]]
+
   defp permute(list) do
-    for x <- list, y <- permute(list -- [x]), do: [x|y]
+    for x <- list, y <- permute(list -- [x]), do: [x | y]
   end
 
   defp run_amplifiers(memory, phases) do

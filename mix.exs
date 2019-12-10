@@ -18,6 +18,6 @@ defmodule AOC.MixProject do
   end
 
   defp deps do
-    [ ]
+    []
   end
 end

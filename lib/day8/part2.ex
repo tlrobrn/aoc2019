@@ -25,10 +25,12 @@ defmodule AOC.Day8.Part2 do
   def render_image(image) do
     image_string =
       image
-      |> Stream.map(&Enum.map(&1, fn
-        0 -> " "
-        1 -> "X"
-      end))
+      |> Stream.map(
+        &Enum.map(&1, fn
+          0 -> " "
+          1 -> "X"
+        end)
+      )
       |> Stream.map(&Enum.join(&1, ""))
       |> Enum.join("\n")
 
@@ -63,6 +65,7 @@ defmodule AOC.Day8.Part2 do
 
   defp map_to_layer(layer_map) do
     {width, height} = dimensions_from_map(layer_map)
+
     layer =
       @transparent
       |> List.duplicate(width)
@@ -87,6 +90,7 @@ defmodule AOC.Day8.Part2 do
       |> Map.keys()
       |> Stream.map(fn {x, _} -> x end)
       |> Enum.max()
+
     height =
       layer_map
       |> Map.keys()
