@@ -32,12 +32,10 @@ defmodule AOC.Day11.Robot do
       _ ->
         Intcode.input(computer, Map.get(panels, pos, @black))
         [color, turn] = Intcode.output(computer)
-        new_panels = Map.put(panels, pos, color)
-        new_robot =
-          robot
-          |> turn(turn)
-          |> move_forward()
-        run(new_robot, computer, new_panels)
+        robot
+        |> turn(turn)
+        |> move_forward()
+        |> run(computer, Map.put(panels, pos, color))
     end
   end
 end
