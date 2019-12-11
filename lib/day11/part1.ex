@@ -4,6 +4,7 @@ defmodule AOC.Day11.Part1 do
 
   def run(input) do
     {:ok, pid} = Intcode.start_link(input)
+
     %Robot{}
     |> Robot.run(pid)
     |> Enum.count()

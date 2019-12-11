@@ -7,6 +7,7 @@ defmodule AOC.Day11.Part2 do
 
   def run(input) do
     {:ok, pid} = Intcode.start_link(input)
+
     %Robot{}
     |> Robot.run(pid, %{{0, 0} => @white})
     |> display()
@@ -15,17 +16,17 @@ defmodule AOC.Day11.Part2 do
   defp display(panels) do
     panels_string =
       y_range(panels)
-        |> Enum.map(fn y ->
-          x_range(panels)
-          |> Enum.map(fn x ->
-            case Map.get(panels, {x, y}, @black) do
-              @black -> " "
-              @white -> "X"
-            end
-          end)
-          |> Enum.join("")
+      |> Enum.map(fn y ->
+        x_range(panels)
+        |> Enum.map(fn x ->
+          case Map.get(panels, {x, y}, @black) do
+            @black -> " "
+            @white -> "X"
+          end
         end)
-        |> Enum.join("\n")
+        |> Enum.join("")
+      end)
+      |> Enum.join("\n")
 
     "\n" <> panels_string <> "\n"
   end

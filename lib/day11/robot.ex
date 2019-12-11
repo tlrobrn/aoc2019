@@ -11,15 +11,29 @@ defmodule AOC.Day11.Robot do
 
   defstruct position: {0, 0}, direction: @up
 
-  def turn(%__MODULE__{direction: @up} = robot, @turn_left), do: %__MODULE__{robot | direction: @left}
-  def turn(%__MODULE__{direction: @left} = robot, @turn_left), do: %__MODULE__{robot | direction: @down}
-  def turn(%__MODULE__{direction: @down} = robot, @turn_left), do: %__MODULE__{robot | direction: @right}
-  def turn(%__MODULE__{direction: @right} = robot, @turn_left), do: %__MODULE__{robot | direction: @up}
+  def turn(%__MODULE__{direction: @up} = robot, @turn_left),
+    do: %__MODULE__{robot | direction: @left}
 
-  def turn(%__MODULE__{direction: @up} = robot, @turn_right), do: %__MODULE__{robot | direction: @right}
-  def turn(%__MODULE__{direction: @right} = robot, @turn_right), do: %__MODULE__{robot | direction: @down}
-  def turn(%__MODULE__{direction: @down} = robot, @turn_right), do: %__MODULE__{robot | direction: @left}
-  def turn(%__MODULE__{direction: @left} = robot, @turn_right), do: %__MODULE__{robot | direction: @up}
+  def turn(%__MODULE__{direction: @left} = robot, @turn_left),
+    do: %__MODULE__{robot | direction: @down}
+
+  def turn(%__MODULE__{direction: @down} = robot, @turn_left),
+    do: %__MODULE__{robot | direction: @right}
+
+  def turn(%__MODULE__{direction: @right} = robot, @turn_left),
+    do: %__MODULE__{robot | direction: @up}
+
+  def turn(%__MODULE__{direction: @up} = robot, @turn_right),
+    do: %__MODULE__{robot | direction: @right}
+
+  def turn(%__MODULE__{direction: @right} = robot, @turn_right),
+    do: %__MODULE__{robot | direction: @down}
+
+  def turn(%__MODULE__{direction: @down} = robot, @turn_right),
+    do: %__MODULE__{robot | direction: @left}
+
+  def turn(%__MODULE__{direction: @left} = robot, @turn_right),
+    do: %__MODULE__{robot | direction: @up}
 
   def move_forward(%__MODULE__{position: {x, y}, direction: {dx, dy}} = robot) do
     %__MODULE__{robot | position: {x + dx, y + dy}}
@@ -29,9 +43,11 @@ defmodule AOC.Day11.Robot do
     case Intcode.status(computer) do
       :halted ->
         panels
+
       _ ->
         Intcode.input(computer, Map.get(panels, pos, @black))
         [color, turn] = Intcode.output(computer)
+
         robot
         |> turn(turn)
         |> move_forward()
