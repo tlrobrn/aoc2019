@@ -115,11 +115,10 @@ defmodule AOC.Intcode do
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        store = if third_mode == 2, do: third + relative_offset, else: third
 
         step(%__MODULE__{
           state
-          | memory: Map.put(memory, store, first_value + second_value),
+          | memory: write(state, third, third_mode, first_value + second_value),
             pointer: pointer + 4
         })
 
@@ -127,11 +126,10 @@ defmodule AOC.Intcode do
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        store = if third_mode == 2, do: third + relative_offset, else: third
 
         step(%__MODULE__{
           state
-          | memory: Map.put(memory, store, first_value * second_value),
+          | memory: write(state, third, third_mode, first_value * second_value),
             pointer: pointer + 4
         })
 
@@ -140,12 +138,11 @@ defmodule AOC.Intcode do
           %__MODULE__{state | status: :ready}
         else
           param = Map.get(memory, pointer + 1, 0)
-          store = if first_mode == 2, do: param + relative_offset, else: param
           [input | new_inputs] = inputs
 
           step(%__MODULE__{
             state
-            | memory: Map.put(memory, store, input),
+            | memory: write(state, param, first_mode, input),
               pointer: pointer + 2,
               inputs: new_inputs
           })
@@ -178,17 +175,25 @@ defmodule AOC.Intcode do
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        store = if third_mode == 2, do: third + relative_offset, else: third
         result = if first_value < second_value, do: 1, else: 0
-        step(%__MODULE__{state | memory: Map.put(memory, store, result), pointer: pointer + 4})
+
+        step(%__MODULE__{
+          state
+          | memory: write(state, third, third_mode, result),
+            pointer: pointer + 4
+        })
 
       8 ->
         [first, second, third] = parameters(memory, pointer, 3)
         first_value = fetch(state, first, first_mode)
         second_value = fetch(state, second, second_mode)
-        store = if third_mode == 2, do: third + relative_offset, else: third
         result = if first_value == second_value, do: 1, else: 0
-        step(%__MODULE__{state | memory: Map.put(memory, store, result), pointer: pointer + 4})
+
+        step(%__MODULE__{
+          state
+          | memory: write(state, third, third_mode, result),
+            pointer: pointer + 4
+        })
 
       9 ->
         param = Map.get(memory, pointer + 1, 0)
@@ -213,6 +218,15 @@ defmodule AOC.Intcode do
   defp fetch(%__MODULE__{memory: memory, relative_offset: offset}, parameter, 2)
        when offset + parameter >= 0 do
     Map.get(memory, offset + parameter, 0)
+  end
+
+  defp write(%__MODULE__{memory: memory}, key, 0, value) do
+    Map.put(memory, key, value)
+  end
+
+  defp write(%__MODULE__{memory: memory, relative_offset: offset}, key, 2, value)
+       when offset + key >= 0 do
+    Map.put(memory, offset + key, value)
   end
 
   defp opcode(memory, pointer) do
