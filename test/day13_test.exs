@@ -5,4 +5,8 @@ defmodule AOC.Day13.Test do
   test "part 1" do
     assert 239 == Day13.part1()
   end
+
+  test "part 2" do
+    assert 12099 == Day13.part2()
+  end
 end

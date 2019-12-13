@@ -42,9 +42,18 @@ defmodule AOC.Intcode do
     GenServer.call(pid, :status)
   end
 
+  def clone(pid) do
+    GenServer.call(pid, :clone)
+  end
+
   # Server
 
   defstruct memory: %{}, pointer: 0, relative_offset: 0, inputs: [], outputs: [], status: :ready
+
+  @impl true
+  def init(%__MODULE__{} = state) do
+    {:ok, state}
+  end
 
   @impl true
   def init(instructions) do
@@ -88,6 +97,11 @@ defmodule AOC.Intcode do
   @impl true
   def handle_call(:status, _from, %__MODULE__{status: status} = state) do
     {:reply, status, state}
+  end
+
+  @impl true
+  def handle_call(:clone, _from, state) do
+    {:reply, GenServer.start_link(__MODULE__, state), state}
   end
 
   defp initialize_memory(instructions) do
