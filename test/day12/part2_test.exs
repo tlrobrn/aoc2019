@@ -1,6 +1,6 @@
-defmodule AOC.Day12.Part1.Test do
+defmodule AOC.Day12.Part2.Test do
   use ExUnit.Case, async: true
-  alias AOC.Day12.{Part1, Vector}
+  alias AOC.Day12.{Part2, Vector}
 
   test "example" do
     input = [
@@ -10,6 +10,6 @@ defmodule AOC.Day12.Part1.Test do
       %Vector{x: 3, y: 5, z: -1}
     ]
 
-    assert 179 == Part1.run(input, 10)
+    assert 2772 == Part2.run(input)
   end
 end

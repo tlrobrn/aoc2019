@@ -11,6 +11,7 @@ defmodule AOC.Day12.Part1 do
   defp moon(position), do: %Moon{position: position}
 
   defp run_simulation(moons, 0), do: moons
+
   defp run_simulation(moons, steps) do
     moons
     |> adjust_velocity()
@@ -20,15 +21,10 @@ defmodule AOC.Day12.Part1 do
 
   defp adjust_velocity(moons) do
     moons
-    |> Stream.with_index()
-    |> Enum.map(fn {moon, i} ->
+    |> Enum.map(fn moon ->
       moons
-      |> Stream.with_index()
-      |> Enum.reduce(moon, fn
-        {_, ^i}, new_moon ->
-          new_moon
-        {other, _}, new_moon ->
-          Moon.gravitate(new_moon, other)
+      |> Enum.reduce(moon, fn other, new_moon ->
+        Moon.gravitate(new_moon, other)
       end)
     end)
   end

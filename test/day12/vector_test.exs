@@ -7,6 +7,7 @@ defmodule AOC.Day12.VectorTest do
   end
 
   test "add" do
-    assert %Vector{x: 2, y: 0, z: 1} == Vector.add(%Vector{x: 1, y: 2, z: 1}, %Vector{x: 1, y: -2, z: 0})
+    assert %Vector{x: 2, y: 0, z: 1} ==
+             Vector.add(%Vector{x: 1, y: 2, z: 1}, %Vector{x: 1, y: -2, z: 0})
   end
 end

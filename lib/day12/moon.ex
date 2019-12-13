@@ -23,30 +23,56 @@ defmodule AOC.Day12.Moon do
     abs(x) + abs(y) + abs(z)
   end
 
-  defp adjust_x_velocity(%__MODULE__{position: %Vector{x: x0}}, %__MODULE__{position: %Vector{x: x1}}) when x0 > x1 do
+  defp adjust_x_velocity(%__MODULE__{position: %Vector{x: x0}}, %__MODULE__{
+         position: %Vector{x: x1}
+       })
+       when x0 > x1 do
     -1
   end
-  defp adjust_x_velocity(%__MODULE__{position: %Vector{x: x0}}, %__MODULE__{position: %Vector{x: x1}}) when x0 < x1 do
+
+  defp adjust_x_velocity(%__MODULE__{position: %Vector{x: x0}}, %__MODULE__{
+         position: %Vector{x: x1}
+       })
+       when x0 < x1 do
     1
   end
+
   defp adjust_x_velocity(_, _) do
     0
   end
-  defp adjust_y_velocity(%__MODULE__{position: %Vector{y: y0}}, %__MODULE__{position: %Vector{y: y1}}) when y0 > y1 do
+
+  defp adjust_y_velocity(%__MODULE__{position: %Vector{y: y0}}, %__MODULE__{
+         position: %Vector{y: y1}
+       })
+       when y0 > y1 do
     -1
   end
-  defp adjust_y_velocity(%__MODULE__{position: %Vector{y: y0}}, %__MODULE__{position: %Vector{y: y1}}) when y0 < y1 do
+
+  defp adjust_y_velocity(%__MODULE__{position: %Vector{y: y0}}, %__MODULE__{
+         position: %Vector{y: y1}
+       })
+       when y0 < y1 do
     1
   end
+
   defp adjust_y_velocity(_, _) do
     0
   end
-  defp adjust_z_velocitz(%__MODULE__{position: %Vector{z: z0}}, %__MODULE__{position: %Vector{z: z1}}) when z0 > z1 do
+
+  defp adjust_z_velocitz(%__MODULE__{position: %Vector{z: z0}}, %__MODULE__{
+         position: %Vector{z: z1}
+       })
+       when z0 > z1 do
     -1
   end
-  defp adjust_z_velocitz(%__MODULE__{position: %Vector{z: z0}}, %__MODULE__{position: %Vector{z: z1}}) when z0 < z1 do
+
+  defp adjust_z_velocitz(%__MODULE__{position: %Vector{z: z0}}, %__MODULE__{
+         position: %Vector{z: z1}
+       })
+       when z0 < z1 do
     1
   end
+
   defp adjust_z_velocitz(_, _) do
     0
   end
